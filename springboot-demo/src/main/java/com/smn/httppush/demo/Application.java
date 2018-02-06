@@ -31,7 +31,6 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 
-
     /**
      * 添加http支持
      * @return

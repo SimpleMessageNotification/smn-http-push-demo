@@ -44,6 +44,8 @@ public class SmnPushAcceptController {
         LOGGER.info("header message is: {}", header);
         String messageType = smnPushMessageRequest.getType();
 
+        // TODO 验证消息签名
+
         if (MessageType.SubscriptionConfirmation.getValue().equals(messageType)) {
             // 处理订阅确认消息
             messageHandleService.handleSubscriptionConfirmation(smnPushMessageRequest);
