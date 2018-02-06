@@ -53,7 +53,7 @@ public class SmnPushAcceptController {
         // 校验消息签名
         boolean checkResult = messageCheckService.checkMessageValid(smnPushMessageRequest);
         if(!checkResult) {
-            LOGGER.info("This message is check invalid.");
+            LOGGER.info("This message signature is check invalid.");
             return Response.newSuccess(null);
         }
 
