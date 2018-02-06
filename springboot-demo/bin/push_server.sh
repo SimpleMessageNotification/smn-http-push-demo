@@ -1,8 +1,7 @@
 #!/bin/sh
 
-SpringBoot=$2
-myClasspath=.
-jarList=
+app_name="http-push"
+myClasspath="`dirname $(pwd)`"
 
 if [ "$1" = "" ];
 then
@@ -10,41 +9,43 @@ then
     exit 1
 fi
 
-if [ "$SpringBoot" = "" ];
-then
-    echo -e "\033[0;31m 未输入应用名 \033[0m"
-    exit 1
-fi
-
 function start()
 {
     JVM_MEM_OPT_DEFAULT=" -Xms1024m -Xmx1024m -server "
-    classPath=""
-    for jarList in $(ls -1 $myClasspath/lib/*.jar); do
-        classPath=$classPath:$jarList
-    done
-    echo classpath
-	count=`ps -ef |grep java|grep $SpringBoot|grep -v grep|wc -l`
+	count=`ps -ef |grep java|grep $app_name|grep -v grep|wc -l`
 	if [ $count != 0 ];then
-		echo "$SpringBoot is running..."
+		echo "$app_name is running..."
 	else
-		echo "Start $SpringBoot success..."
-		nohup java $JVM_MEM_OPT_DEFAULT  -classpath "%CLASSPATH%" com.smn.httppush.demo.Application > /dev/null 2>&1 &
+		echo "Start to $app_name ..."
+		nohup java $JVM_MEM_OPT_DEFAULT  -classpath "$myClasspath/lib/*" com.smn.httppush.demo.Application > /dev/null 2>&1 &
+		sleep 3;
+		count=`ps -ef |grep java|grep $app_name|grep -v grep|wc -l`
+		if [ $count == 0 ];then
+		    echo "Start $app_name failed..."
+		else
+		    echo "Start success..."
+		fi
 	fi
 }
 
 function stop()
 {
-	echo "Stop $SpringBoot"
-	boot_id=`ps -ef |grep java|grep $SpringBoot|grep -v grep|awk '{print $2}'`
-	count=`ps -ef |grep java|grep $SpringBoot|grep -v grep|wc -l`
+	echo "Stop $app_name"
+	boot_id=`ps -ef |grep java|grep $app_name|grep -v grep|awk '{print $2}'`
+	count=`ps -ef |grep java|grep $app_name|grep -v grep|wc -l`
 
 	if [ $count != 0 ];then
 	    kill $boot_id
-    	count=`ps -ef |grep java|grep $SpringBoot|grep -v grep|wc -l`
+    	count=`ps -ef |grep java|grep $app_name|grep -v grep|wc -l`
 
-		boot_id=`ps -ef |grep java|grep $SpringBoot|grep -v grep|awk '{print $2}'`
+		boot_id=`ps -ef |grep java|grep $app_name|grep -v grep|awk '{print $2}'`
 		kill -9 $boot_id
+
+		sleep 3;
+		echo "Stop $app_name success..."
+
+	else
+	    echo "$app_name is not running..."
 	fi
 }
 
@@ -57,11 +58,11 @@ function restart()
 
 function status()
 {
-    count=`ps -ef |grep java|grep $SpringBoot|grep -v grep|wc -l`
+    count=`ps -ef |grep java|grep $app_name|grep -v grep|wc -l`
     if [ $count != 0 ];then
-        echo "$SpringBoot is running..."
+        echo "$app_name is running..."
     else
-        echo "$SpringBoot is not running..."
+        echo "$app_name is not running..."
     fi
 }
 
@@ -76,7 +77,7 @@ case $1 in
 	status;;
 	*)
 
-	echo -e "\033[0;31m Usage: \033[0m  \033[0;34m sh  $0  {start|stop|restart|status}  {SpringBootJarName} \033[0m
+	echo -e "\033[0;31m Usage: \033[0m  \033[0;34m sh  $0  {start|stop|restart|status}  {app_nameJarName} \033[0m
 \033[0;31m Example: \033[0m
 	  \033[0;33m sh  $0  start esmart-test.jar \033[0m"
 esac

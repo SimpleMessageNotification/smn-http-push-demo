@@ -7,7 +7,7 @@
     <includeBaseDirectory>true</includeBaseDirectory>
     <fileSets>
         <fileSet>
-            <directory>src/main/resources</directory>
+            <directory>config</directory>
             <outputDirectory>config</outputDirectory>
             <fileMode>0644</fileMode><!--0664的权限-->
         </fileSet>

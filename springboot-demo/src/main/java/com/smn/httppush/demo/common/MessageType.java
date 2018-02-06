@@ -1,5 +1,8 @@
 package com.smn.httppush.demo.common;
 
+/**
+ * 短信消息类型
+ */
 public enum MessageType {
     SubscriptionConfirmation("SubscriptionConfirmation"),
     Notification("Notification"),
@@ -7,7 +10,7 @@ public enum MessageType {
 
     private String value;
 
-    private MessageType(String value){
+    private MessageType(String value) {
         this.value = value;
     }
 
