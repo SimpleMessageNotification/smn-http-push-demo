@@ -5,6 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 
+/**
+ * 消息DTO
+ *
+ * @author zhangyx
+ * @version 1.0.0
+ */
 public class SmnPushMessageRequest implements Serializable {
 
     private static final long serialVersionUID = -7268917189862446786L;

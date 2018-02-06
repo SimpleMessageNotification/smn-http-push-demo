@@ -2,6 +2,12 @@ package com.smn.httppush.demo.response;
 
 import java.io.Serializable;
 
+/**
+ * 响应结果
+ *
+ * @author zhangyx
+ * @version 1.0.0
+ */
 public class Response<T> implements Serializable {
     private static final long serialVersionUID = -4774672312419683890L;
 

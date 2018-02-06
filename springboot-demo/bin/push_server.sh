@@ -1,7 +1,7 @@
 #!/bin/sh
 
 app_name="http-push"
-myClasspath="`dirname $(pwd)`"
+myClasspath=$(cd `dirname $0`;cd ..; pwd)
 
 if [ "$1" = "" ];
 then
