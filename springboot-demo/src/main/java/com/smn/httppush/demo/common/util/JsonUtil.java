@@ -5,6 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * json util
+ *
+ * @author zhangyx
+ * @version 1.0.0
+ */
 public class JsonUtil {
     /**
      * Object mapper root
