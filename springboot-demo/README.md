@@ -61,7 +61,7 @@ server.ssl.keyAlias:tomcat
 ```
 
 + 4、缓存清理定时任务配置  
-在程序http-push->配置文件config/logback-spring.xml中设置cert.cache.clean.task参数,默认凌晨1点
+在程序http-push->配置文件config/application.properties中设置cert.cache.clean.task参数,默认凌晨1点
 ```java
 ### cert.cache.clean.task
 cert.cache.clean.task=0 0 1 * * ?
