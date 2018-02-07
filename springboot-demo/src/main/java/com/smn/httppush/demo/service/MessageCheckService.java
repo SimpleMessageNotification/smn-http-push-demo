@@ -10,6 +10,15 @@ import com.smn.httppush.demo.request.SmnPushMessageRequest;
  */
 public interface MessageCheckService {
 
+    /**
+     * 校验消息是否有效
+     * @param request
+     * @return
+     */
     boolean checkMessageValid(SmnPushMessageRequest request);
 
+    /**
+     * 清空证书缓存
+     */
+    void clearCertCache();
 }

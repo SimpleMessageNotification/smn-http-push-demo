@@ -45,6 +45,9 @@ public class SmnPushMessageRequest implements Serializable {
     @JsonProperty("timestamp")
     private String timestamp;
 
+    @JsonProperty("subject")
+    private String subject;
+
     public String getType() {
         return type;
     }
@@ -125,6 +128,14 @@ public class SmnPushMessageRequest implements Serializable {
         this.subscribeUrl = subscribeUrl;
     }
 
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SmnPushMessageRequest{");
@@ -138,6 +149,7 @@ public class SmnPushMessageRequest implements Serializable {
         sb.append(", signatureVersion='").append(signatureVersion).append('\'');
         sb.append(", signingCertUrl='").append(signingCertUrl).append('\'');
         sb.append(", timestamp='").append(timestamp).append('\'');
+        sb.append(", subject='").append(subject).append('\'');
         sb.append('}');
         return sb.toString();
     }

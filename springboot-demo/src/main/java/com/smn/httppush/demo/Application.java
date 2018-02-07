@@ -11,6 +11,7 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.io.IOException;
  * @version 1.0.0
  */
 @SpringBootApplication
+@EnableScheduling
 public class Application {
 
     @Value("${server.http.port}")
@@ -37,16 +39,13 @@ public class Application {
      */
     @Bean
     public EmbeddedServletContainerCustomizer containerCustomizer() {
-        return new EmbeddedServletContainerCustomizer() {
-            @Override
-            public void customize(ConfigurableEmbeddedServletContainer container) {
-                if (container instanceof TomcatEmbeddedServletContainerFactory) {
-                    TomcatEmbeddedServletContainerFactory containerFactory =
-                            (TomcatEmbeddedServletContainerFactory) container;
-                    Connector connector = new Connector(TomcatEmbeddedServletContainerFactory.DEFAULT_PROTOCOL);
-                    connector.setPort(httpPort);
-                    containerFactory.addAdditionalTomcatConnectors(connector);
-                }
+        return container -> {
+            if (container instanceof TomcatEmbeddedServletContainerFactory) {
+                TomcatEmbeddedServletContainerFactory containerFactory =
+                        (TomcatEmbeddedServletContainerFactory) container;
+                Connector connector = new Connector(TomcatEmbeddedServletContainerFactory.DEFAULT_PROTOCOL);
+                connector.setPort(httpPort);
+                containerFactory.addAdditionalTomcatConnectors(connector);
             }
         };
     }

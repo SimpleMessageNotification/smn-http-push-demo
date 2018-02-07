@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @see MessageHandleService
@@ -22,7 +23,6 @@ import java.util.Map;
 @Service
 public class MessageHandleServiceImpl implements MessageHandleService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageHandleServiceImpl.class);
-
     @Override
     public boolean handleSubscriptionConfirmation(SmnPushMessageRequest request) {
         // 获取确认订阅url，并请求确认订阅

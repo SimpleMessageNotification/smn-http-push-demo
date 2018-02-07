@@ -14,6 +14,7 @@ import java.security.Signature;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 消息签名验证逻辑
@@ -26,16 +27,22 @@ import java.util.Base64;
 public class MessageCheckServiceImpl implements MessageCheckService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageCheckServiceImpl.class);
 
+    // 缓存证书, 证书失效期为24小时，根据url判断， 每天凌晨1点执行证书缓存的清理，
+    // 查看定时器Scheduler
+    private static final ConcurrentHashMap<String, InputStream> certCache = new ConcurrentHashMap<String, InputStream>();
+
     @Override
     public boolean checkMessageValid(SmnPushMessageRequest request) {
         if (!checkTypeValid(request.getType())) {
             return false;
         }
 
-        InputStream in = null;
+        InputStream in = getCertInputStream(request.getSigningCertUrl());
+        if (in == null) {
+            LOGGER.error("Get SigningCert failed, inputStream is null.");
+            return false;
+        }
         try {
-            URL url = new URL(request.getSigningCertUrl());
-            in = url.openStream();
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             X509Certificate cert = (X509Certificate) cf.generateCertificate(in);
             Signature sig = Signature.getInstance(cert.getSigAlgName());
@@ -48,7 +55,6 @@ public class MessageCheckServiceImpl implements MessageCheckService {
             }
         } catch (Exception e) {
             LOGGER.error("Verify method failed.", e);
-
         } finally {
             if (in != null) {
                 try {
@@ -59,6 +65,28 @@ public class MessageCheckServiceImpl implements MessageCheckService {
             }
         }
         return false;
+    }
+
+    private InputStream getCertInputStream(String certUrl) {
+        InputStream in = certCache.get(certUrl);
+
+        if (in == null) {
+            synchronized (this) {
+                in = certCache.get(certUrl);
+                if (in == null) {
+                    URL url = null;
+                    try {
+                        url = new URL(certUrl);
+                        in = url.openStream();
+                        certCache.putIfAbsent(certUrl, in);
+                    } catch (Exception e) {
+                        LOGGER.error("Get cert inputStream failed. certUrl[{}]", url);
+                        return null;
+                    }
+                }
+            }
+        }
+        return in;
     }
 
     private boolean checkTypeValid(String type) {
@@ -104,11 +132,11 @@ public class MessageCheckServiceImpl implements MessageCheckService {
         stringMessage += "message_id\n";
         stringMessage += request.getMessageId() + "\n";
         stringMessage += "subject\n";
-//        if (request != null) {
-//            stringMessage += msg.get("subject").toString() + "\n";
-//        } else {
-        stringMessage += "" + "\n";
-//        }
+        if (request.getSubject() != null) {
+            stringMessage += request.getSubject() + "\n";
+        } else {
+            stringMessage += "" + "\n";
+        }
         stringMessage += "timestamp\n";
         stringMessage += request.getTimestamp() + "\n";
         stringMessage += "topic_urn\n";
@@ -116,5 +144,10 @@ public class MessageCheckServiceImpl implements MessageCheckService {
         stringMessage += "type\n";
         stringMessage += request.getType() + "\n";
         return stringMessage;
+    }
+
+    @Override
+    public void clearCertCache() {
+        certCache.clear();
     }
 }
