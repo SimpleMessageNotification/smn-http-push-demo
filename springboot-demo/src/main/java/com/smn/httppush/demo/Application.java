@@ -1,20 +1,13 @@
 package com.smn.httppush.demo;
 
 import org.apache.catalina.connector.Connector;
-import org.apache.coyote.http11.Http11NioProtocol;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.EnableScheduling;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * 服务启动类
@@ -26,8 +19,11 @@ import java.io.IOException;
 @EnableScheduling
 public class Application {
 
-    @Value("${server.http.port}")
+    @Value("${server.http.port:8080}")
     private int httpPort;
+
+    @Value("${server.http.enable:false}")
+    private boolean httpEnable;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -35,6 +31,7 @@ public class Application {
 
     /**
      * 添加http支持
+     *
      * @return
      */
     @Bean
@@ -43,9 +40,11 @@ public class Application {
             if (container instanceof TomcatEmbeddedServletContainerFactory) {
                 TomcatEmbeddedServletContainerFactory containerFactory =
                         (TomcatEmbeddedServletContainerFactory) container;
-                Connector connector = new Connector(TomcatEmbeddedServletContainerFactory.DEFAULT_PROTOCOL);
-                connector.setPort(httpPort);
-                containerFactory.addAdditionalTomcatConnectors(connector);
+                if (httpEnable) {
+                    Connector connector = new Connector(TomcatEmbeddedServletContainerFactory.DEFAULT_PROTOCOL);
+                    connector.setPort(httpPort);
+                    containerFactory.addAdditionalTomcatConnectors(connector);
+                }
             }
         };
     }

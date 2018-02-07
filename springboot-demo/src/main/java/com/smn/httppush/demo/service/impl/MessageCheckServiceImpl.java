@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -29,7 +31,7 @@ public class MessageCheckServiceImpl implements MessageCheckService {
 
     // 缓存证书, 证书失效期为24小时，根据url判断， 每天凌晨1点执行证书缓存的清理，
     // 查看定时器Scheduler
-    private static final ConcurrentHashMap<String, InputStream> certCache = new ConcurrentHashMap<String, InputStream>();
+    private static final ConcurrentHashMap<String, byte[]> certCache = new ConcurrentHashMap<String, byte[]>();
 
     @Override
     public boolean checkMessageValid(SmnPushMessageRequest request) {
@@ -68,17 +70,18 @@ public class MessageCheckServiceImpl implements MessageCheckService {
     }
 
     private InputStream getCertInputStream(String certUrl) {
-        InputStream in = certCache.get(certUrl);
+        byte[] bytes = certCache.get(certUrl);
 
-        if (in == null) {
+        if (bytes == null) {
             synchronized (this) {
-                in = certCache.get(certUrl);
-                if (in == null) {
+                bytes = certCache.get(certUrl);
+                if (bytes == null) {
                     URL url = null;
                     try {
                         url = new URL(certUrl);
-                        in = url.openStream();
-                        certCache.putIfAbsent(certUrl, in);
+                        InputStream inputStream = url.openStream();
+                        bytes = inputStream2Byte(inputStream);
+                        certCache.putIfAbsent(certUrl, bytes);
                     } catch (Exception e) {
                         LOGGER.error("Get cert inputStream failed. certUrl[{}]", url);
                         return null;
@@ -86,7 +89,23 @@ public class MessageCheckServiceImpl implements MessageCheckService {
                 }
             }
         }
-        return in;
+
+
+        return bytes2InputStream(bytes);
+    }
+
+    private InputStream bytes2InputStream(byte[] bytes) {
+        return new ByteArrayInputStream(bytes);
+    }
+
+    private byte[] inputStream2Byte(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] buff = new byte[100];
+        int rc = 0;
+        while ((rc = inputStream.read(buff, 0, 100)) > 0) {
+            outputStream.write(buff, 0, rc);
+        }
+        return outputStream.toByteArray();
     }
 
     private boolean checkTypeValid(String type) {
