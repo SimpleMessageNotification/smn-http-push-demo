@@ -6,7 +6,7 @@
 + maven
 
 ### 编译包下载
-springboot-demo/bin目录下http-push-springboot.zip
+springboot-demo/package目录下http-push-springboot.zip
 
 ### 自行编译
 下载源码， 进入到源码springboot-demo目录，执行以下命令编译
@@ -39,14 +39,14 @@ springboot-demo/bin目录下http-push-springboot.zip
 
 ### 配置参数 
 + 1、http端口  
- 在程序http-push/config/application.properties中设置server.http.port参数
+ 在程序http-push->配置文件config/application.properties中设置server.http.port参数
  ```java
 server.http.enable=true
 server.http.port=8080
 ```
  
 + 2、配置https参数和端口
- 在程序http-push/config/application.properties, 关闭https请删除这段配置
+ 在程序http-push->配置文件config/application.properties, 关闭https请删除这段配置
 ```java
 server.port:8443
 server.ssl.key-store:config/keystore.p12
@@ -55,7 +55,14 @@ server.ssl.keyStoreType:PKCS12
 server.ssl.keyAlias:tomcat
 ```
 + 3、配置日志路径  
-在程序http-push->在配置文件config/logback-spring.xml中设置，日志路径请使用绝对路径。
+在程序http-push->配置文件config/logback-spring.xml中设置，日志路径请使用绝对路径。
 ```java
 <property name="LOG_HOME" value="/var/log/http-push"/>
+```
+
++ 4、缓存清理定时任务配置
+在程序http-push->配置文件config/logback-spring.xml中设置cert.cache.clean.task参数,默认凌晨1点
+```java
+### cert.cache.clean.task
+cert.cache.clean.task=0 0 1 * * ?
 ```

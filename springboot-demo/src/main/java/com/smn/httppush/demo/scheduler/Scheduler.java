@@ -23,7 +23,7 @@ public class Scheduler {
     /**
      * 每天凌晨一点执行证书缓存的清理
      */
-    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "${cert.cache.clean.task}")
     public void certCacheCleanTask() {
         LOGGER.info("Start to clear cert cache");
         messageCheckService.clearCertCache();
