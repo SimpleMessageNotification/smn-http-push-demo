@@ -65,6 +65,7 @@ public class SmnPushAcceptController {
             // 处理推送消息
             messageHandleService.handleNotificationMessage(smnPushMessageRequest);
         } else if (MessageType.UnsubscribeConfirmation.getValue().equals(messageType)) {
+            // 处理取消订阅确认消息，您可以处理这条消息重新订阅
             // TODO something here
         } else {
             LOGGER.info("Incorrect message type");
