@@ -4,6 +4,7 @@ import com.smn.httppush.demo.common.MessageType;
 import com.smn.httppush.demo.request.SmnPushMessageRequest;
 import com.smn.httppush.demo.request.SmnRequestHeader;
 import com.smn.httppush.demo.response.Response;
+import com.smn.httppush.demo.service.MessageCheckService;
 import com.smn.httppush.demo.service.MessageHandleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,12 @@ public class SmnPushAcceptController {
     private MessageHandleService messageHandleService;
 
     /**
+     * 消息签名校验逻辑
+     */
+    @Autowired
+    private MessageCheckService messageCheckService;
+
+    /**
      * 接收smn推送消息，并处理
      *
      * @param smnPushMessageRequest body体
@@ -42,10 +49,15 @@ public class SmnPushAcceptController {
         SmnRequestHeader header = getHeader(headers);
         LOGGER.info("body message is: {}", smnPushMessageRequest);
         LOGGER.info("header message is: {}", header);
+
+        // 校验消息签名
+        boolean checkResult = messageCheckService.checkMessageValid(smnPushMessageRequest);
+        if(!checkResult) {
+            LOGGER.info("This message signature is check invalid.");
+            return Response.newSuccess(null);
+        }
+
         String messageType = smnPushMessageRequest.getType();
-
-        // TODO 验证消息签名
-
         if (MessageType.SubscriptionConfirmation.getValue().equals(messageType)) {
             // 处理订阅确认消息
             messageHandleService.handleSubscriptionConfirmation(smnPushMessageRequest);
@@ -53,7 +65,8 @@ public class SmnPushAcceptController {
             // 处理推送消息
             messageHandleService.handleNotificationMessage(smnPushMessageRequest);
         } else if (MessageType.UnsubscribeConfirmation.getValue().equals(messageType)) {
-            // TODO
+            // 处理取消订阅确认消息，您可以处理这条消息重新订阅
+            // TODO something here
         } else {
             LOGGER.info("Incorrect message type");
         }
