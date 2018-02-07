@@ -6,7 +6,7 @@
 + maven
 
 ### 编译包下载
-springboot-demo/package目录下http-push-springboot.zip
+springboot-demo/dist目录下http-push-springboot.zip
 
 ### 自行编译
 下载源码， 进入到源码springboot-demo目录，执行以下命令编译
