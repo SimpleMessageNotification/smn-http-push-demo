@@ -17,7 +17,7 @@ function start()
 		echo "$app_name is running..."
 	else
 		echo "Start to $app_name ..."
-		nohup java $JVM_MEM_OPT_DEFAULT  -classpath "$myClasspath/lib/*" com.smn.httppush.demo.Application > /dev/null 2>&1 &
+		nohup java $JVM_MEM_OPT_DEFAULT  -classpath "$myClasspath/lib/*" -Dspring.config.location=config com.smn.httppush.demo.Application > /dev/null 2>&1 &
 		sleep 3;
 		count=`ps -ef |grep java|grep $app_name|grep -v grep|wc -l`
 		if [ $count == 0 ];then
