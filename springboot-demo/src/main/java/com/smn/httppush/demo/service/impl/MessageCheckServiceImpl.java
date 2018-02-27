@@ -12,8 +12,13 @@
 package com.smn.httppush.demo.service.impl;
 
 import com.smn.httppush.demo.common.MessageType;
+import com.smn.httppush.demo.common.util.HttpUtil;
 import com.smn.httppush.demo.request.SmnPushMessageRequest;
 import com.smn.httppush.demo.service.MessageCheckService;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,11 +27,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URLDecoder;
 import java.security.Signature;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -61,7 +65,8 @@ public class MessageCheckServiceImpl implements MessageCheckService {
             Signature sig = Signature.getInstance(cert.getSigAlgName());
             sig.initVerify(cert.getPublicKey());
             sig.update(buildSignMessage(request).getBytes("UTF-8"));
-            byte[] sigByte = Base64.getDecoder().decode(request.getSignature());
+
+            byte[] sigByte = new Base64().decode(request.getSignature());
 
             if (sig.verify(sigByte)) {
                 return true;
@@ -87,22 +92,47 @@ public class MessageCheckServiceImpl implements MessageCheckService {
             synchronized (this) {
                 bytes = certCache.get(certUrl);
                 if (bytes == null) {
-                    URL url = null;
                     try {
-                        url = new URL(certUrl);
-                        InputStream inputStream = url.openStream();
-                        bytes = inputStream2Byte(inputStream);
+                        bytes = downloadCert(certUrl);
+                        if (bytes == null) {
+                            return null;
+                        }
                         certCache.putIfAbsent(certUrl, bytes);
                     } catch (Exception e) {
-                        LOGGER.error("Get cert inputStream failed. certUrl[{}]", url);
+                        LOGGER.error("Get cert inputStream failed. certUrl[" + certUrl + "]", e);
                         return null;
                     }
                 }
             }
         }
-
-
         return bytes2InputStream(bytes);
+    }
+
+    private byte[] downloadCert(String url) {
+        CloseableHttpResponse response = null;
+        CloseableHttpClient httpClient = null;
+        try {
+            httpClient = HttpUtil.getHttpClient();
+            HttpGet httpRequest = new HttpGet(URLDecoder.decode(url));
+            response = httpClient.execute(httpRequest);
+            int status = response.getStatusLine().getStatusCode();
+            if (status >= 200 && status < 300) {
+                // 下载成功
+                return inputStream2Byte(response.getEntity().getContent());
+            } else {
+                LOGGER.info("Get cert inputStream failed, status[{}], url[{}]", status, url);
+                return null;
+            }
+        } catch (Exception e) {
+            LOGGER.error("Get cert error, url[" + url + "]", e);
+            return null;
+        } finally {
+            try {
+                HttpUtil.closeClientAndResponse(response, httpClient);
+            } catch (IOException e) {
+                LOGGER.warn("fail to close httpclient and httpResponse, url[" + url + "]", e);
+            }
+        }
     }
 
     private InputStream bytes2InputStream(byte[] bytes) {
