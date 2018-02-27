@@ -117,7 +117,7 @@ public class MessageCheckServiceImpl implements MessageCheckService {
             response = httpClient.execute(httpRequest);
             int status = response.getStatusLine().getStatusCode();
             if (status >= 200 && status < 300) {
-                // 确认订阅成功
+                // 下载成功
                 return inputStream2Byte(response.getEntity().getContent());
             } else {
                 LOGGER.info("Get cert inputStream failed, status[{}], url[{}]", status, url);

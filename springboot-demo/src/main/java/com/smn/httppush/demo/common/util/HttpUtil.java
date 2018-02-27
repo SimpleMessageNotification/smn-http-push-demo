@@ -34,6 +34,8 @@ import java.security.cert.X509Certificate;
 
 /**
  * http 工具类
+ *
+ * @author zhangyx
  */
 public class HttpUtil {
 
