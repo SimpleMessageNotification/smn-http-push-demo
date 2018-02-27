@@ -1,7 +1,18 @@
+/*
+ * Copyright (C) 2018. Huawei Technologies Co., LTD. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of Apache License, Version 2.0.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Apache License, Version 2.0 for more details.
+ */
 package com.smn.httppush.demo.common.util;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -20,33 +31,56 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Map;
 
+/**
+ * http 工具类
+ */
 public class HttpUtil {
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 60000;
     private static final int DEFAULT_SOCKET_TIMEOUT = 60000;
 
-    public static HttpResponse get(String url, Map<String, String> headerParams) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
-        CloseableHttpClient httpclient = getHttpClient();
-        HttpRequestBase httpRequestBase = new HttpGet(url);
-        httpRequestBase.setConfig(getRequestConfig());
-        buildHttpHeader(headerParams, httpRequestBase);
-        return httpclient.execute(httpRequestBase);
-    }
-
-    private static void buildHttpHeader(Map<String, String> requestHeaderMap, HttpRequestBase httpRequestBase) {
-        for (String headerKey : requestHeaderMap.keySet()) {
-            httpRequestBase.addHeader(headerKey, requestHeaderMap.get(headerKey));
-        }
-    }
-
-    private static CloseableHttpClient getHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    /**
+     * 获取httpclient
+     *
+     * @return CloseableHttpClient httpclient
+     * @throws NoSuchAlgorithmException 算法不支持抛出异常
+     * @throws KeyStoreException        ssl证书异常
+     * @throws KeyManagementException   ssl证书异常
+     */
+    public static CloseableHttpClient getHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         return HttpClients.custom().setSSLSocketFactory(buildSslFactoryIgnoreCertificate()).build();
     }
 
-    private static RequestConfig getRequestConfig() {
+    /**
+     * 根据url获取get方法的request
+     *
+     * @param url 请求地址
+     * @return HttpRequestBase
+     */
+    public static HttpRequestBase getHttpGetRequest(String url) {
+        HttpRequestBase request = new HttpGet(url);
+        request.setConfig(getRequestConfig());
+        return request;
+    }
 
+    /**
+     * 关闭httpClient 和httpResponse
+     *
+     * @param response   待关闭httpResponse
+     * @param httpClient 待关闭httpClient
+     * @throws IOException 关闭异常抛出
+     */
+    public static void closeClientAndResponse(CloseableHttpResponse response, CloseableHttpClient httpClient) throws IOException {
+        if (response != null) {
+            response.close();
+        }
+        if (httpClient != null) {
+            httpClient.close();
+        }
+    }
+
+    private static RequestConfig getRequestConfig() {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(DEFAULT_CONNECT_TIMEOUT)
                 .setSocketTimeout(DEFAULT_SOCKET_TIMEOUT)

@@ -12,13 +12,12 @@
 package com.smn.httppush.demo.service.impl;
 
 import com.smn.httppush.demo.common.EventType;
+import com.smn.httppush.demo.common.util.HttpUtil;
 import com.smn.httppush.demo.common.util.JsonUtil;
 import com.smn.httppush.demo.request.SmnPushMessageRequest;
 import com.smn.httppush.demo.service.MessageHandleService;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @see MessageHandleService
@@ -34,28 +32,33 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class MessageHandleServiceImpl implements MessageHandleService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageHandleServiceImpl.class);
+
     @Override
     public boolean handleSubscriptionConfirmation(SmnPushMessageRequest request) {
         // 获取确认订阅url，并请求确认订阅
-        HttpClient client = new DefaultHttpClient();
-        HttpResponse response;
+        CloseableHttpResponse response = null;
+        CloseableHttpClient httpClient = null;
         try {
-
-            HttpGet httpRequest = new HttpGet(URLDecoder.decode(request.getSubscribeUrl()));
-            response = client.execute(httpRequest);
-        } catch (IOException e) {
-            LOGGER.error("Subscribe error, url[{}]", request.getSubscribeUrl());
+            httpClient = HttpUtil.getHttpClient();
+            response = httpClient.execute(HttpUtil.getHttpGetRequest(URLDecoder.decode(request.getSubscribeUrl())));
+            int status = response.getStatusLine().getStatusCode();
+            if (status >= 200 && status < 300) {
+                // 确认订阅成功
+                return true;
+            } else {
+                LOGGER.info("Subscribe fail, url[{}]", request.getSubscribeUrl());
+                return false;
+            }
+        } catch (Exception e) {
+            LOGGER.error("Subscribe error, url[" + request.getSubscribeUrl() + "]", e);
             return false;
+        } finally {
+            try {
+                HttpUtil.closeClientAndResponse(response, httpClient);
+            } catch (IOException e) {
+                LOGGER.warn("fail to close httpclient and httpResponse, url[" + request.getSubscribeUrl() + "]", e);
+            }
         }
-
-        int status = response.getStatusLine().getStatusCode();
-        if (status >= 200 && status < 300) {
-            LOGGER.info("Subscribe success, url[{}]", request.getSubscribeUrl());
-        } else {
-            LOGGER.info("Subscribe fail, url[{}]", request.getSubscribeUrl());
-            return false;
-        }
-        return true;
     }
 
     @Override
@@ -69,26 +72,26 @@ public class MessageHandleServiceImpl implements MessageHandleService {
         /**
          * 短信发送成功或者失败的body
          *{
-             message_id:xxxxx,
-             status:1/0,
-             sign_id:xxx,
-             status_desc:错误码,
-             fee_num:2,
-             extend_code:xxxx,
-             nation_code:86,
-             mobile:134****8888,
-             submit_time:2016-08-08T08:10:00Z,
-             deliver_time:2016-08-08T08:10:00Z,
-             event_type: "sms_success_event" 或者 "sms_fail_event"
+         message_id:xxxxx,
+         status:1/0,
+         sign_id:xxx,
+         status_desc:错误码,
+         fee_num:2,
+         extend_code:xxxx,
+         nation_code:86,
+         mobile:134****8888,
+         submit_time:2016-08-08T08:10:00Z,
+         deliver_time:2016-08-08T08:10:00Z,
+         event_type: "sms_success_event" 或者 "sms_fail_event"
          }
          短信回复的上行reply
          {
-             nation_code: "86"
-             mobile:"134****8888",
-             reply:"xxxxx",
-             sign_id:xxx,
-             deliver_time:2016-08-08T08:10:00Z,
-             event_type: "sms_reply_event"
+         nation_code: "86"
+         mobile:"134****8888",
+         reply:"xxxxx",
+         sign_id:xxx,
+         deliver_time:2016-08-08T08:10:00Z,
+         event_type: "sms_reply_event"
          }
          */
         if (EventType.SMS_FAIL_EVENT.getValue().equals(messageType)) {
