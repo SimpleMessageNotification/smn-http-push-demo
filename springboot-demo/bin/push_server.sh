@@ -3,6 +3,8 @@
 app_name="http-push"
 myClasspath=$(cd `dirname $0`;cd ..; pwd)
 
+cd $myClasspath
+
 if [ "$1" = "" ];
 then
     echo -e "\033[0;31m 未输入操作名 \033[0m  \033[0;34m {start|stop|restart|status} \033[0m"
