@@ -191,12 +191,9 @@ public class MessageCheckServiceImpl implements MessageCheckService {
         stringMessage += request.getMessage() + "\n";
         stringMessage += "message_id\n";
         stringMessage += request.getMessageId() + "\n";
-        stringMessage += "subject\n";
         if (request.getSubject() != null) {
             stringMessage += request.getSubject() + "\n";
-        } else {
-            stringMessage += "" + "\n";
-        }
+        } 
         stringMessage += "timestamp\n";
         stringMessage += request.getTimestamp() + "\n";
         stringMessage += "topic_urn\n";
