@@ -95,7 +95,7 @@
 				<configuration>
 					<finalName>${project.name}</finalName>
 					<descriptors>
-						<descriptor>${project.basedir}\assembly\assembly.xml</descriptor>
+						<descriptor>${project.basedir}/assembly/assembly.xml</descriptor>
 					</descriptors>
 				</configuration>
 				<executions>
