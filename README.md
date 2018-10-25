@@ -66,3 +66,8 @@ server.ssl.keyAlias:tomcat
 ### cert.cache.clean.task
 cert.cache.clean.task=0 0 1 * * ?
 ```
+
+### 添加消息通知服务订阅
++ 1、登陆华为云，进入消息通知服务的console，添加一个主题  
++ 2、点击进入主题，点击添加订阅，将部署好的http服务器，添加到主题中，httpurl为：http://eip:port/smn_push  
++ 3、点击主题，发布消息，消息可以在服务器的/var/log/http-push目录下看日志
